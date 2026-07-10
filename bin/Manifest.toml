@@ -1,0 +1,10 @@
+# This file is machine-generated - editing it directly is not advised
+
+julia_version = "1.12.6"
+manifest_format = "2.0"
+project_hash = "492e41c357381756b5c1819f21587b60f31a0930"
+
+[[deps.MiniAutoDiff]]
+path = ".."
+uuid = "a7657950-2ba5-42df-8b82-b249c6806bb5"
+version = "1.0.0-DEV"

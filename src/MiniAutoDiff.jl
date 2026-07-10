@@ -1,5 +1,11 @@
 module MiniAutoDiff
 
-# Write your package code here.
+    using Base
+
+    include("core.jl")
+    include("autodiff.jl")
+
+
+export Variable, diff
 
 end
