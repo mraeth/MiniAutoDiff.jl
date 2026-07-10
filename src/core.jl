@@ -155,3 +155,17 @@ function Base.abs(a::Variable{DT}) where DT<:Number
     return out
 end
 
+function relu(a::Variable{DT}) where DT<:Number
+    val = max(zero(DT), a.value)
+    out = Variable(val)
+    push!(out.parents, (a, a.value > zero(DT) ? one(DT) : zero(DT)))
+    return out
+end
+relu(x::Number) = max(zero(x), x)
+
+sigmoid(a::Variable{DT}) where DT<:Number = one(DT) / (one(DT) + exp(-a))
+sigmoid(x::Number) = one(x) / (one(x) + exp(-x))
+
+softplus(a::Variable{DT}) where DT<:Number = log(one(DT) + exp(a))
+softplus(x::Number) = log(one(x) + exp(x))
+

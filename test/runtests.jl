@@ -74,4 +74,60 @@ end
         @test all(gradient_check(mse_f, [0.5, 0.1]).rel_err .≤ 1e-5)
     end
 
+    @testset "Layers and optimizers" begin
+
+        @testset "Linear output shape" begin
+            layer = Linear(3, 5)
+            x = [Variable(rand()) for _ in 1:3]
+            @test length(forward(layer, x)) == 5
+        end
+
+        @testset "parameters(Linear) count" begin
+            # 3 inputs × 5 outputs weights + 5 biases = 20
+            @test length(parameters(Linear(3, 5))) == 3 * 5 + 5
+        end
+
+        @testset "parameters(Model) count" begin
+            # Linear(2,4): 8+4=12; Tanh: 0; Linear(4,1): 4+1=5 → total 17
+            model = Model([Linear(2, 4), Tanh(), Linear(4, 1)])
+            @test length(parameters(model)) == 17
+        end
+
+        @testset "forward(Model) output type and length" begin
+            model = Model([Linear(3, 5), Tanh(), Linear(5, 2)])
+            x = [Variable(rand()) for _ in 1:3]
+            out = forward(model, x)
+            @test length(out) == 2
+            @test all(isa(o, Variable) for o in out)
+        end
+
+        @testset "GradientDescent update" begin
+            p = Variable(3.0); p.grad = 2.0
+            update(p, GradientDescent(0.1))
+            @test p.value ≈ 3.0 - 0.1 * 2.0
+        end
+
+        @testset "relu gradient" begin
+            # Avoid x=0: sub-gradient discontinuity causes expected mismatch
+            @test all(gradient_check(x -> relu(x), [1.0]).rel_err .≤ 1e-5)
+            @test all(gradient_check(x -> relu(x), [2.0]).rel_err .≤ 1e-5)
+        end
+
+        @testset "sigmoid gradient" begin
+            @test all(gradient_check(x -> sigmoid(x), [0.0]).rel_err .≤ 1e-5)
+            @test all(gradient_check(x -> sigmoid(x), [1.5]).rel_err .≤ 1e-5)
+        end
+
+        @testset "softplus gradient" begin
+            @test all(gradient_check(x -> softplus(x), [0.0]).rel_err .≤ 1e-5)
+            @test all(gradient_check(x -> softplus(x), [2.0]).rel_err .≤ 1e-5)
+        end
+
+        @testset "mse_loss gradient" begin
+            # ∂/∂ŷ of (ŷ - 0)²/1 at ŷ=1.0 → 2.0
+            @test all(gradient_check(w -> mse_loss([w], [0.0]), [1.0]).rel_err .≤ 1e-5)
+        end
+
+    end
+
 end
